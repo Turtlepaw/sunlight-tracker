@@ -137,13 +137,6 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         startForeground(1, notification)
         sunlightViewModel = ViewModelProvider(this, SunlightViewModelFactory(this.dataStore)).get(SunlightViewModel::class.java)
 
-        val thresholdFilter = IntentFilter("${packageName}.THRESHOLD_UPDATED")
-        registerReceiver(thresholdReceiver, thresholdFilter)
-        val shutDownFilter = IntentFilter("${packageName}.SHUTDOWN_WORKER")
-        registerReceiver(shutdownReceiver, shutDownFilter)
-        val wakeupFilter = IntentFilter("${packageName}.WAKEUP_WORKER")
-        registerReceiver(wakeupReceiver, wakeupFilter)
-
         Toast.makeText(this, "Service created!", Toast.LENGTH_LONG).show()
 
         handler = Handler()
@@ -155,6 +148,13 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         }
 
         handler.postDelayed(runnable, 15000)
+
+        val thresholdFilter = IntentFilter("${packageName}.THRESHOLD_UPDATED")
+        registerReceiver(thresholdReceiver, thresholdFilter)
+        val shutDownFilter = IntentFilter("${packageName}.SHUTDOWN_WORKER")
+        registerReceiver(shutdownReceiver, shutDownFilter)
+        val wakeupFilter = IntentFilter("${packageName}.WAKEUP_WORKER")
+        registerReceiver(wakeupReceiver, wakeupFilter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -3,12 +3,14 @@ package com.turtlepaw.sunlight.complication
 import android.app.PendingIntent
 import android.content.Context
 import android.graphics.drawable.Icon
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.wear.watchface.complications.data.ComplicationData
 import androidx.wear.watchface.complications.data.ComplicationType
+import androidx.wear.watchface.complications.data.GoalProgressComplicationData
 import androidx.wear.watchface.complications.data.LongTextComplicationData
 import androidx.wear.watchface.complications.data.MonochromaticImage
 import androidx.wear.watchface.complications.data.MonochromaticImageComplicationData
@@ -87,16 +89,20 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
             SmallImageType.ICON
         ).build()
 
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && type == ComplicationType.GOAL_PROGRESS){
+            return GoalProgressComplicationData.Builder(
+                value = sunlightToday.toFloat(),
+                contentDescription = PlainComplicationText.Builder(contentDescription).build(),
+                targetValue = goal.toFloat()
+            ).build()
+        }
+
         return when (type) {
             ComplicationType.SHORT_TEXT -> ShortTextComplicationData.Builder(
                 text = PlainComplicationText.Builder(text).build(),
                 contentDescription = PlainComplicationText.Builder(contentDescription).build()
             )
                 .setMonochromaticImage(monochromaticImage)
-//                .setTitle(
-//                    PlainComplicationText.Builder(contentDescription)
-//                        .build()
-//                )
                 .setSmallImage(smallImage)
                 .setTapAction(createActivityIntent(context))
                 .build()
@@ -105,10 +111,6 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
                 contentDescription = PlainComplicationText.Builder(contentDescription).build()
             )
                 .setMonochromaticImage(monochromaticImage)
-//                .setTitle(
-//                    PlainComplicationText.Builder(contentDescription)
-//                        .build()
-//                )
                 .setSmallImage(smallImage)
                 .setTapAction(createActivityIntent(context))
                 .build()
@@ -124,15 +126,8 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
                 )
                 .setMonochromaticImage(monochromaticImage)
                 .setTapAction(createActivityIntent(context))
-//                .setTitle(
-//                    PlainComplicationText.Builder(contentDescription)
-//                        .build()
-//                )
                 .setSmallImage(smallImage)
                 .build()
-//            ComplicationType.NO_DATA -> TODO()
-//            ComplicationType.EMPTY -> TODO()
-//            ComplicationType.NOT_CONFIGURED -> TODO()
             ComplicationType.MONOCHROMATIC_IMAGE -> MonochromaticImageComplicationData.Builder(
                 monochromaticImage,
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
@@ -142,14 +137,16 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
             )
                 .build()
-//            ComplicationType.PHOTO_IMAGE -> TODO()
-            else -> throw IllegalArgumentException("unknown complication type")
-//            ComplicationType.GOAL_PROGRESS -> GoalProgressComplicationData.Builder(
-//                value = number,
-//                contentDescription = PlainComplicationText.Builder(contentDescription).build(),
-//                targetValue = 8f
-//            ).build()
-//            ComplicationType.WEIGHTED_ELEMENTS -> TODO()
+            // Return default data
+            else -> createComplicationData(
+                sunlightToday,
+                goal,
+                text,
+                contentDescription,
+                ComplicationType.RANGED_VALUE,
+                context
+            )
+        //throw IllegalArgumentException("unknown complication type")
         }
     }
 

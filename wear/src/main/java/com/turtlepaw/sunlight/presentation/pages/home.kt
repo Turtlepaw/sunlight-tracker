@@ -27,6 +27,7 @@ import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.CircularProgressIndicator
 import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.PositionIndicator
@@ -41,8 +42,8 @@ import com.turtlepaw.sunlight.presentation.Routes
 import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.utils.Settings
-import java.time.format.DateTimeFormatter
 import kotlin.math.abs
+
 
 @OptIn(ExperimentalHorologistApi::class, ExperimentalWearFoundationApi::class)
 @Composable
@@ -56,8 +57,6 @@ fun WearHome(
     SleepTheme {
         val focusRequester = rememberActiveFocusRequester()
         val scalingLazyListState = rememberScalingLazyListState()
-        val formatter = DateTimeFormatter.ofPattern("hh:mm")
-        val formatterWithDetails = DateTimeFormatter.ofPattern("hh:mm a")
 
         Box(
             modifier = Modifier
@@ -79,15 +78,38 @@ fun WearHome(
                         scrollableState = scalingLazyListState,
                     ),
                 scrollableState = scalingLazyListState,
+                verticalAlignment = Arrangement.Top,
             ) {
                 item {
-                    Image(
-                        painter = painterResource(id = R.drawable.sunlight_gold),
-                        contentDescription = "sunlight",
+                    val size = 95.dp
+                    val iconSize = 30.dp
+                    Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .padding(bottom = 8.dp)
-                    )
+                            .size(size)
+//                            .padding(
+//                                bottom = 8.dp,
+//                            )
+                            .padding(
+                                top = 35.dp,
+                            )
+                    ) {
+                        CircularProgressIndicator(
+                            trackColor = MaterialTheme.colors.surface,
+                            progress = today.toFloat() / goal.toFloat(), // Adjust this value to change the progress
+                            modifier = Modifier
+                                .size(size)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.sunlight_gold),
+                            contentDescription = "sunlight",
+                            modifier = Modifier
+                                .size(iconSize)
+                                .align(Alignment.Center)
+                        )
+                    }
+                }
+                item {
+                    Spacer(modifier = Modifier.padding(5.dp))
                 }
                 item {
                     if(sunlightLx >= threshold){
@@ -117,12 +139,18 @@ fun WearHome(
                         },
                         color = MaterialTheme.colors.primary,
                         fontSize = 22.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(3.dp)
                     )
                 }
                 item {
                     Text(
-                        text = if(today >= goal) "You've reached your goal" else "${abs(today - goal)}m left to your goal",
+                        text = if(today >= goal)
+                            "You've reached your goal"
+                        else if(today == 0)
+                            "Wear your watch in the sun to earn minutes"
+                        else
+                            "${abs(today - goal)}m left to your goal",
                         modifier = Modifier.padding(top = 4.dp),
                         textAlign = TextAlign.Center
                     )
@@ -136,26 +164,26 @@ fun WearHome(
                             .fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
                     ) {
-                        Button(
-                            onClick = {
-                                navigate(
-                                    Routes.HISTORY.getRoute()
-                                )
-                            },
-                            colors = ButtonDefaults.secondaryButtonColors(),
-                            modifier = Modifier
-                                .size(ButtonDefaults.DefaultButtonSize)
-                                //.wrapContentSize(align = Alignment.Center)
-                        ) {
-                            // Icon for history button
-                            Icon(
-                                painter = painterResource(id = R.drawable.history),
-                                contentDescription = "History",
-                                tint = MaterialTheme.colors.primary,
-                                modifier = Modifier
-                                    .padding(2.dp)
-                            )
-                        }
+//                        Button(
+//                            onClick = {
+//                                navigate(
+//                                    Routes.HISTORY.getRoute()
+//                                )
+//                            },
+//                            colors = ButtonDefaults.secondaryButtonColors(),
+//                            modifier = Modifier
+//                                .size(ButtonDefaults.DefaultButtonSize)
+//                                //.wrapContentSize(align = Alignment.Center)
+//                        ) {
+//                            // Icon for history button
+//                            Icon(
+//                                painter = painterResource(id = R.drawable.history),
+//                                contentDescription = "History",
+//                                tint = MaterialTheme.colors.primary,
+//                                modifier = Modifier
+//                                    .padding(2.dp)
+//                            )
+//                        }
 
                         Button(
                             onClick = {
@@ -165,17 +193,28 @@ fun WearHome(
                             },
                             colors = ButtonDefaults.secondaryButtonColors(),
                             modifier = Modifier
-                                .size(ButtonDefaults.DefaultButtonSize)
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
                                 //.wrapContentSize(align = Alignment.Center)
                         ) {
-                            // Icon for history button
-                            Icon(
-                                painter = painterResource(id = R.drawable.settings),
-                                tint = MaterialTheme.colors.primary,
-                                contentDescription = "Settings",
+                            Row(
                                 modifier = Modifier
-                                    .padding(2.dp)
-                            )
+                                    .padding(2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.settings),
+                                    tint = MaterialTheme.colors.primary,
+                                    contentDescription = "Settings",
+                                )
+                                Spacer(modifier = Modifier.padding(5.dp))
+                                Text(
+                                    text = "Settings",
+                                    color = MaterialTheme.colors.primary,
+                                    style = MaterialTheme.typography.title3
+                                )
+                            }
                         }
                     }
 

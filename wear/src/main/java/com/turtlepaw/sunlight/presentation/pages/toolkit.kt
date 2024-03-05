@@ -13,7 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
@@ -83,12 +82,21 @@ fun ClockworkToolkit(
                 )
             ) {
                 item {
-                    Text(text = "Clockwork")
+                    Text(
+                        text = "Toolkit",
+                        style = MaterialTheme.typography.caption1
+                    )
+                }
+                item {
+                    Text(
+                        text = "Useful debugging tools",
+                        style = MaterialTheme.typography.body2
+                    )
                 }
                 item {
                     Text(
                         text = "Current Light",
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.title3
                     )
                 }
                 item {
@@ -97,7 +105,7 @@ fun ClockworkToolkit(
                 item {
                     Text(
                         text = "Light worker",
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.title3
                     )
                 }
                 item {
