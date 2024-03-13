@@ -130,12 +130,13 @@ class MainTileService : SuspendingTileService(), ViewModelStoreOwner {
                                 .build()
                         )
                         .addContent(
-                            tileLayout(
+                            if(today == 0) noDataLayout(
+                                this
+                            ).build() else tileLayout(
                                 this,
                                 today,
                                 goal
-                            )
-                                .build()
+                            ).build()
                         )
                         .build()
                 ).build()
@@ -176,25 +177,24 @@ private fun noDataLayout(
                 .build()
         )
         .setSecondaryLabelTextContent(
-            LayoutElementBuilders.Column.Builder()
-                .addContent(
                     Text.Builder(
                         context,
-                        if(today >= goal) "Goal Reached" else "${abs(today - goal)}m to go"                    )
-                        .setTypography(Typography.TYPOGRAPHY_BODY1)
+                        "No data. Wear your watch in the sun."
+                    ).setTypography(Typography.TYPOGRAPHY_BODY2)
                         .setColor(argb(TileColors.White))
+                        .setOverflow(LayoutElementBuilders.TEXT_OVERFLOW_ELLIPSIZE_END)
+                        .setMaxLines(2)
+                        .setMultilineAlignment(LayoutElementBuilders.TEXT_ALIGN_CENTER)
                         .setModifiers(
                             Modifiers.Builder()
                                 .setPadding(
                                     Padding.Builder()
-                                        .setBottom(
-                                            dp(20f)
+                                        .setTop(
+                                            dp(10f)
                                         )
                                         .build()
                                 )
                                 .build()
-                        )
-                        .build()
                 )
 //                .addContent(
 //                    Text.Builder(context, sleepQuality.getTitle())
@@ -204,47 +204,18 @@ private fun noDataLayout(
 //                )
                 .build()
         )
-        .setContent(
-            Spannable.Builder()
-                .addSpan(
-                    SpanText.Builder()
-                        .setText(today.toString())
-                        .setFontStyle(
-                            FontStyle.PrimaryFontSize.getBuilder()
-                        )
-                        .build()
-                )
-                .addSpan(
-                    SpanText.Builder()
-                        .setText("m")
-                        .setFontStyle(
-                            FontStyle.SecondaryFontSize.getBuilder()
-                        )
-                        .build()
-                )
+//        .setContent(
+//            Spannable.Builder()
 //                .addSpan(
 //                    SpanText.Builder()
-//                        .setText(" ")
-//                        .build()
-//                )
-//                .addSpan(
-//                    SpanText.Builder()
-//                        .setText(sleepTime.minutes.toString())
+//                        .setText("No Data")
 //                        .setFontStyle(
 //                            FontStyle.PrimaryFontSize.getBuilder()
 //                        )
 //                        .build()
 //                )
-//                .addSpan(
-//                    SpanText.Builder()
-//                        .setText("m")
-//                        .setFontStyle(
-//                            FontStyle.SecondaryFontSize.getBuilder()
-//                        )
-//                        .build()
-//                )
-                .build()
-        )
+//                .build()
+//        )
 }
 
 private fun tileLayout(
@@ -362,5 +333,22 @@ fun TilePreview() {
         LocalContext.current,
         15,
         Settings.GOAL.getDefaultAsInt()
+    ).build())
+}
+
+@Preview(
+    device = WearDevices.SMALL_ROUND,
+    showSystemUi = true,
+    backgroundColor = 0xff000000,
+    showBackground = true
+)
+@Composable
+fun NoDataPreview() {
+    val timeManager = TimeManager()
+    val timeDifference = timeManager.calculateTimeDifference(LocalTime.of(5, 0));
+    val sleepQuality = timeManager.calculateSleepQuality(timeDifference)
+
+    LayoutRootPreview(root = noDataLayout(
+        LocalContext.current
     ).build())
 }

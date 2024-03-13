@@ -143,7 +143,7 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         runnable = Runnable {
             // handler to stop android
             // from hibernating this service
-            Log.v(TAG, "Service still running")
+            Log.v(TAG, "Service still running, time in sunlight is $timeInLight")
             handler.postDelayed(runnable, 10000)
         }
 
@@ -192,7 +192,6 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_LIGHT) {
             val luminance = event.values[0]
-            Log.d(TAG, "Received light: $luminance")
 
             if (threshold != null && luminance >= (threshold ?: 0)) {
                 val currentTime = LocalTime.now()
@@ -201,14 +200,12 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                 // Backwards compatible
                 if (timeInLight >= 60000) {
                     CoroutineScope(Dispatchers.Default).launch {
-                        Log.d(TAG, "Rewarding 1 minute")
                         sunlightViewModel.add(LocalDate.now(), (timeInLight / 1000 / 60).toInt())
                         timeInLight = 0
                     }
                 }
                 lastUpdated = currentTime
             } else {
-                Log.d(TAG, "Not bright enough (target: $threshold)")
                 lastUpdated = LocalTime.now() // Update lastUpdated even if not bright enough
             }
         }
