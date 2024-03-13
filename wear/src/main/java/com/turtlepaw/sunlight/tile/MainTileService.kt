@@ -164,6 +164,89 @@ class MainTileService : SuspendingTileService(), ViewModelStoreOwner {
     }
 }
 
+private fun noDataLayout(
+    context: Context
+): EdgeContentLayout.Builder {
+    val deviceParameters = buildDeviceParameters(context.resources)
+    return EdgeContentLayout.Builder(deviceParameters)
+        .setPrimaryLabelTextContent(
+            Text.Builder(context, "Sunlight")
+                .setTypography(6.toInt())
+                .setColor(argb(TileColors.LightText))
+                .build()
+        )
+        .setSecondaryLabelTextContent(
+            LayoutElementBuilders.Column.Builder()
+                .addContent(
+                    Text.Builder(
+                        context,
+                        if(today >= goal) "Goal Reached" else "${abs(today - goal)}m to go"                    )
+                        .setTypography(Typography.TYPOGRAPHY_BODY1)
+                        .setColor(argb(TileColors.White))
+                        .setModifiers(
+                            Modifiers.Builder()
+                                .setPadding(
+                                    Padding.Builder()
+                                        .setBottom(
+                                            dp(20f)
+                                        )
+                                        .build()
+                                )
+                                .build()
+                        )
+                        .build()
+                )
+//                .addContent(
+//                    Text.Builder(context, sleepQuality.getTitle())
+//                        .setTypography(Typography.TYPOGRAPHY_BODY2)
+//                        .setColor(argb(TileColors.White))
+//                        .build()
+//                )
+                .build()
+        )
+        .setContent(
+            Spannable.Builder()
+                .addSpan(
+                    SpanText.Builder()
+                        .setText(today.toString())
+                        .setFontStyle(
+                            FontStyle.PrimaryFontSize.getBuilder()
+                        )
+                        .build()
+                )
+                .addSpan(
+                    SpanText.Builder()
+                        .setText("m")
+                        .setFontStyle(
+                            FontStyle.SecondaryFontSize.getBuilder()
+                        )
+                        .build()
+                )
+//                .addSpan(
+//                    SpanText.Builder()
+//                        .setText(" ")
+//                        .build()
+//                )
+//                .addSpan(
+//                    SpanText.Builder()
+//                        .setText(sleepTime.minutes.toString())
+//                        .setFontStyle(
+//                            FontStyle.PrimaryFontSize.getBuilder()
+//                        )
+//                        .build()
+//                )
+//                .addSpan(
+//                    SpanText.Builder()
+//                        .setText("m")
+//                        .setFontStyle(
+//                            FontStyle.SecondaryFontSize.getBuilder()
+//                        )
+//                        .build()
+//                )
+                .build()
+        )
+}
+
 private fun tileLayout(
     context: Context,
     today: Int,
