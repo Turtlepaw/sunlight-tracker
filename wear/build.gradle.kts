@@ -12,7 +12,7 @@ android {
         applicationId = "com.turtlepaw.sunlight"
         minSdk = 30
         targetSdk = 33
-        versionCode = 3
+        versionCode = 5
         versionName = "1.0"
         vectorDrawables {
             useSupportLibrary = true

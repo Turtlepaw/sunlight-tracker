@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -80,7 +81,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sunlightViewModel: MutableState<SunlightViewModel>
     private var sensorManager: SensorManager? = null
     private var lightSensor: Sensor? = null
-    private var sunlightLx = mutableStateOf(0f)
+    private var sunlightLx = mutableFloatStateOf(0f)
     private val tag = "MainSunlightActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,7 +126,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 sharedPreferences,
                 sunlightViewModel.value,
                 this,
-                sunlightLx.value
+                sunlightLx.floatValue
             )
         }
     }
@@ -162,7 +163,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if (event.sensor.type == Sensor.TYPE_LIGHT) {
             val luminance = event.values[0]
             // Check if light intensity surpasses threshold
-            sunlightLx.value = luminance
+            sunlightLx.floatValue = luminance
         }
     }
 }
@@ -266,6 +267,11 @@ fun WearPages(
                     val editor = sharedPreferences.edit()
                     editor.putInt(Settings.GOAL.getKey(), value)
                     editor.apply()
+                    // Send the broadcast
+                    val intent = Intent("${context.packageName}.GOAL_UPDATED").apply {
+                        putExtra("goal", value)
+                    }
+                    context.sendBroadcast(intent)
                     navController.popBackStack()
                 }
             }

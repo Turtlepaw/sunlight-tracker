@@ -13,6 +13,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.Keep
@@ -21,6 +22,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import com.turtlepaw.sunlight.presentation.GoalCompleteActivity
 import com.turtlepaw.sunlight.presentation.dataStore
 import com.turtlepaw.sunlight.utils.Settings
 import com.turtlepaw.sunlight.utils.SettingsBasics
@@ -32,6 +34,8 @@ import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalTime
+import java.util.Calendar
+import kotlin.properties.Delegates
 
 
 @Keep
@@ -43,12 +47,16 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
     private var timeInLight: Int = 0
     private var lastUpdated: LocalTime = LocalTime.now()
     private var threshold: Int? = null
+    private var minutes: Int = 0
+    private var goal by Delegates.notNull<Int>()
     var context: Context = this
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
+    private lateinit var midnightRunnable: Runnable
     private val thresholdReceiver = ThresholdReceiver()
     private val shutdownReceiver = ShutdownReceiver()
     private val wakeupReceiver = WakeupReceiver()
+    private val goalReceiver = GoalReceiver()
 
     // Shared Preferences Listener
     inner class ThresholdReceiver : BroadcastReceiver() {
@@ -58,6 +66,16 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
             // Update threshold value when received a broadcast
             val threshold = intent?.getIntExtra("threshold", defaultThreshold) ?: defaultThreshold
             updateThreshold(threshold)
+        }
+    }
+
+    inner class GoalReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.d(TAG, "Received new goal")
+            val defaultGoal = Settings.GOAL.getDefaultAsInt()
+            // Update threshold value when received a broadcast
+            val goal = intent?.getIntExtra("goal", defaultGoal) ?: defaultGoal
+            updateGoal(goal)
         }
     }
 
@@ -78,6 +96,11 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
     fun updateThreshold(newThreshold: Int) {
         threshold = newThreshold
         Log.d(TAG, "Threshold updated")
+    }
+
+    fun updateGoal(newGoal: Int) {
+        goal = newGoal
+        Log.d(TAG, "Goal updated")
     }
 
     fun onShutdown() {
@@ -139,15 +162,52 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
 
         Toast.makeText(this, "Service created!", Toast.LENGTH_LONG).show()
 
-        handler = Handler()
+        handler = Handler(Looper.myLooper()!!)
         runnable = Runnable {
             // handler to stop android
             // from hibernating this service
             Log.v(TAG, "Service still running, time in sunlight is $timeInLight")
             handler.postDelayed(runnable, 10000)
         }
+        midnightRunnable = Runnable {
+            minutes = 0
+            val midnight = Calendar.getInstance().apply {
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+            }
+
+            val currentTime = Calendar.getInstance()
+
+            val delayInMillis = if (currentTime.timeInMillis > midnight.timeInMillis) {
+                // If current time is already past midnight, schedule for the next day
+                midnight.add(Calendar.DAY_OF_MONTH, 1)
+                midnight.timeInMillis - currentTime.timeInMillis
+            } else {
+                midnight.timeInMillis - currentTime.timeInMillis
+            }
+            handler.postAtTime(midnightRunnable, delayInMillis)
+        }
 
         handler.postDelayed(runnable, 15000)
+
+        val midnight = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+        }
+
+        val currentTime = Calendar.getInstance()
+
+        val delayInMillis = if (currentTime.timeInMillis > midnight.timeInMillis) {
+            // If current time is already past midnight, schedule for the next day
+            midnight.add(Calendar.DAY_OF_MONTH, 1)
+            midnight.timeInMillis - currentTime.timeInMillis
+        } else {
+            midnight.timeInMillis - currentTime.timeInMillis
+        }
+
+        handler.postAtTime(runnable, delayInMillis)
 
         val thresholdFilter = IntentFilter("${packageName}.THRESHOLD_UPDATED")
         registerReceiver(thresholdReceiver, thresholdFilter)
@@ -155,6 +215,8 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         registerReceiver(shutdownReceiver, shutDownFilter)
         val wakeupFilter = IntentFilter("${packageName}.WAKEUP_WORKER")
         registerReceiver(wakeupReceiver, wakeupFilter)
+        val goalFilter = IntentFilter("${packageName}.GOAL_UPDATED")
+        registerReceiver(goalReceiver, goalFilter)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -168,6 +230,10 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         threshold = sharedPreferences.getInt(
             Settings.SUN_THRESHOLD.getKey(),
             Settings.SUN_THRESHOLD.getDefaultAsInt()
+        )
+        goal = sharedPreferences.getInt(
+            Settings.GOAL.getKey(),
+            Settings.GOAL.getDefaultAsInt()
         )
 //        val factory = SunlightViewModelFactory(this.dataStore)
 //        sunlightViewModel = ViewModelProvider(
@@ -201,7 +267,14 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                 if (timeInLight >= 60000) {
                     CoroutineScope(Dispatchers.Default).launch {
                         sunlightViewModel.add(LocalDate.now(), (timeInLight / 1000 / 60).toInt())
+                        minutes += 1
                         timeInLight = 0
+
+                        if(minutes == goal){
+                            startActivity(
+                                Intent(applicationContext, GoalCompleteActivity::class.java)
+                            )
+                        }
                     }
                 }
                 lastUpdated = currentTime
