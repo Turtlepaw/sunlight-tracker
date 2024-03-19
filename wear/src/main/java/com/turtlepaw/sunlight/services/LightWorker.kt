@@ -270,10 +270,10 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                         minutes += 1
                         timeInLight = 0
 
-                        if(minutes == goal){
-                            startActivity(
-                                Intent(applicationContext, GoalCompleteActivity::class.java)
-                            )
+                        if(minutes >= goal){
+                            val intent = Intent(applicationContext, GoalCompleteActivity::class.java)
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            startActivity(intent)
                         }
                     }
                 }

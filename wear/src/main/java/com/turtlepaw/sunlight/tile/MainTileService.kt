@@ -229,8 +229,8 @@ private fun tileLayout(
         .setEdgeContent(
             CircularProgressIndicator.Builder()
                 .setProgress(today.toFloat() / goal.toFloat())
-                .setStartAngle(-170f)
-                .setEndAngle(170f)
+                .setStartAngle(-150f)
+                .setEndAngle(150f)
                 .setCircularProgressIndicatorColors(
                     ProgressIndicatorColors(
                         TileColors.PrimaryColor,

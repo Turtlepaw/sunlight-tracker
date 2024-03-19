@@ -46,6 +46,7 @@ import com.turtlepaw.sunlight.presentation.pages.ClockworkToolkit
 import com.turtlepaw.sunlight.presentation.pages.StatePicker
 import com.turtlepaw.sunlight.presentation.pages.WearHome
 import com.turtlepaw.sunlight.presentation.pages.history.WearHistory
+import com.turtlepaw.sunlight.presentation.pages.settings.WearNotices
 import com.turtlepaw.sunlight.presentation.pages.settings.WearSettings
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.SensorReceiver
@@ -64,7 +65,8 @@ enum class Routes(private val route: String) {
     GOAL_PICKER("/goal-picker"),
     SUN_PICKER("/sun-picker"),
     HISTORY("/history"),
-    CLOCKWORK("/clockwork-toolkit");
+    CLOCKWORK("/clockwork-toolkit"),
+    NOTICES("/notices");
 
     fun getRoute(query: String? = null): String {
         return if(query != null){
@@ -304,6 +306,9 @@ fun WearPages(
             }
             composable(Routes.CLOCKWORK.getRoute()){
                 ClockworkToolkit(light = sunlightLx, context = context)
+            }
+            composable(Routes.NOTICES.getRoute()){
+                WearNotices()
             }
         }
     }

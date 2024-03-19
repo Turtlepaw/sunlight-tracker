@@ -126,6 +126,24 @@ fun WearSettings(
                     }
                 }
 //                item {
+//                    Button(
+//                        onClick = {
+//                            navigate(Routes.NOTICES.getRoute())
+//                        },
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(horizontal = 10.dp),
+//                        colors = ButtonDefaults.buttonColors(
+//                            backgroundColor = MaterialTheme.colors.primary
+//                        )
+//                    ) {
+//                        Text(
+//                            text = "Notices",
+//                            color = Color.Black
+//                        )
+//                    }
+//                }
+//                item {
 //                    ToggleChip(
 //                        modifier = Modifier
 //                            .fillMaxWidth()
