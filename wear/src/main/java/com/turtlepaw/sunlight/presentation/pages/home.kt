@@ -1,5 +1,8 @@
 package com.turtlepaw.sunlight.presentation.pages
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +14,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -42,6 +48,7 @@ import com.turtlepaw.sunlight.presentation.Routes
 import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.utils.Settings
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 
@@ -56,7 +63,18 @@ fun WearHome(
 ) {
     SleepTheme {
         val focusRequester = rememberActiveFocusRequester()
+        val coroutineScope = rememberCoroutineScope()
         val scalingLazyListState = rememberScalingLazyListState()
+        val animatedGoal = remember { Animatable(0f) }
+
+        LaunchedEffect(true) {
+            coroutineScope.launch {
+                animatedGoal.animateTo(
+                    targetValue = goal.toFloat(),
+                    animationSpec = tween(durationMillis = 1000)
+                )
+            }
+        }
 
         Box(
             modifier = Modifier
@@ -95,7 +113,10 @@ fun WearHome(
                     ) {
                         CircularProgressIndicator(
                             trackColor = MaterialTheme.colors.surface,
-                            progress = today.toFloat() / goal.toFloat(), // Adjust this value to change the progress
+                            progress = animateFloatAsState(
+                                targetValue = animatedGoal.value / goal,
+                                label = "GoalProgress"
+                            ).value, // Adjust this value to change the progress
                             modifier = Modifier
                                 .size(size)
                         )
