@@ -189,11 +189,16 @@ fun WearPages(
         var sunlightHistory by remember { mutableStateOf<Set<Pair<LocalDate, Int>?>>(emptySet()) }
         var sunlightToday by remember { mutableIntStateOf(0) }
         // Battery Saver
+        val goalNotificatinsRaw = sharedPreferences.getBoolean(
+            Settings.GOAL_NOTIFICATIONS.getKey(),
+            Settings.GOAL_NOTIFICATIONS.getDefaultAsBoolean()
+        )
         val isBatterySaverRaw = sharedPreferences.getBoolean(
             Settings.BATTERY_SAVER.getKey(),
             Settings.BATTERY_SAVER.getDefaultAsBoolean()
         )
         var isBatterySaver by remember { mutableStateOf(isBatterySaverRaw) }
+        var goalNotifications by remember { mutableStateOf(goalNotificatinsRaw) }
         var loading by remember { mutableStateOf(true) }
         val lifecycleOwner = LocalLifecycleOwner.current
         val state by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
@@ -244,12 +249,20 @@ fun WearPages(
             }
             composable(Routes.SETTINGS.getRoute()) {
                 WearSettings(
+                    context,
                     navigate = { route ->
                         navController.navigate(route)
                     },
                     goal,
                     threshold,
-                    isBatterySaver
+                    isBatterySaver,
+                    goalNotifications,
+                    setGoalNotifications = {
+                        goalNotifications = it
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean(Settings.GOAL_NOTIFICATIONS.getKey(), it)
+                        editor.apply()
+                    }
                 ){ value ->
                     isBatterySaver = value
                     val editor = sharedPreferences.edit()
@@ -312,28 +325,4 @@ fun WearPages(
             }
         }
     }
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearHome(
-        navigate = {},
-        goal = Settings.GOAL.getDefaultAsInt(),
-        today = 30,
-        5000f,
-        LightConfiguration.LightThreshold.plus(5f).toInt()
-    )
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun SettingsPreview() {
-    WearSettings(
-        navigate = {},
-        goal = Settings.GOAL.getDefaultAsInt(),
-        sunlightThreshold = Settings.SUN_THRESHOLD.getDefaultAsInt(),
-        true,
-        {}
-    )
 }

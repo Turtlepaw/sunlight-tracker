@@ -74,7 +74,7 @@ class GoalCompleteActivity : ComponentActivity() {
     }
 }
 
-fun vibrate(context: Context) {
+fun goalVibrate(context: Context) {
     val vibrator = context.getSystemService(Vibrator::class.java)
     if (vibrator != null && vibrator.hasVibrator()) {
         vibrator.vibrate(
@@ -101,8 +101,6 @@ fun WearGoalComplete(
         val progress = remember { Animatable(0f) }
 
         LaunchedEffect(true) {
-            vibrate(context)
-
             coroutineScope.launch {
                 progress.animateTo(
                     targetValue = goal.toFloat(),

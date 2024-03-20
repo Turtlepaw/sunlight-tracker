@@ -103,11 +103,5 @@ fun WearNotices(){
 @Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
 @Composable
 fun NoticesPreview() {
-    WearSettings(
-        navigate = {},
-        goal = Settings.GOAL.getDefaultAsInt(),
-        sunlightThreshold = Settings.SUN_THRESHOLD.getDefaultAsInt(),
-        isBatterySaver = true,
-        setBatterySaver = {}
-    )
+    WearNotices()
 }

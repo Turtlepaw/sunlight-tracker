@@ -1,5 +1,6 @@
 package com.turtlepaw.sunlight.services
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -7,6 +8,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -17,13 +20,16 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.Keep
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import com.turtlepaw.sunlight.presentation.GoalCompleteActivity
 import com.turtlepaw.sunlight.presentation.dataStore
+import com.turtlepaw.sunlight.presentation.goalVibrate
 import com.turtlepaw.sunlight.utils.Settings
 import com.turtlepaw.sunlight.utils.SettingsBasics
 import com.turtlepaw.sunlight.utils.SunlightViewModel
@@ -53,6 +59,7 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
     private lateinit var handler: Handler
     private lateinit var runnable: Runnable
     private lateinit var midnightRunnable: Runnable
+    private lateinit var sharedPreferences: SharedPreferences
     private val thresholdReceiver = ThresholdReceiver()
     private val shutdownReceiver = ShutdownReceiver()
     private val wakeupReceiver = WakeupReceiver()
@@ -158,9 +165,12 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
             .setContentText("Listening for changes in light from your device").build()
 
         startForeground(1, notification)
-        sunlightViewModel = ViewModelProvider(this, SunlightViewModelFactory(this.dataStore)).get(SunlightViewModel::class.java)
+        sunlightViewModel = ViewModelProvider(
+            this,
+            SunlightViewModelFactory(this.dataStore)
+        ).get(SunlightViewModel::class.java)
 
-        Toast.makeText(this, "Service created!", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Tracking", Toast.LENGTH_LONG).show()
 
         handler = Handler(Looper.myLooper()!!)
         runnable = Runnable {
@@ -223,7 +233,7 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         Log.d(TAG, "Waiting for light changes")
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager?
         lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
-        val sharedPreferences = getSharedPreferences(
+        sharedPreferences = getSharedPreferences(
             SettingsBasics.SHARED_PREFERENCES.getKey(),
             SettingsBasics.SHARED_PREFERENCES.getMode()
         )
@@ -255,6 +265,40 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
         // Do nothing
     }
 
+    fun sendNotification(context: Context, goal: Int) {
+        // Create a notification channel for Android Oreo and higher
+        val channelId = "goal_complete"
+        val channelName = "Goal Complete"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(channelId, channelName, importance).apply {
+            description = "Receive notifications when you reach your goal"
+        }
+        val notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.createNotificationChannel(channel)
+
+        // Create the notification
+
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(com.turtlepaw.sunlight.R.drawable.sunlight_gold)
+            .setContentTitle("Goal Complete")
+            .setContentText("You've completed your goal of ${goal}m!")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        // Show the notification
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
+
+            notify(123, builder.build())
+        }
+    }
+
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_LIGHT) {
             val luminance = event.values[0]
@@ -270,10 +314,14 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                         minutes += 1
                         timeInLight = 0
 
-                        if(minutes >= goal){
-                            val intent = Intent(applicationContext, GoalCompleteActivity::class.java)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            startActivity(intent)
+                        if (minutes >= goal) {
+                            if (
+                                sharedPreferences.getBoolean(
+                                    Settings.GOAL_NOTIFICATIONS.getKey(),
+                                    Settings.GOAL_NOTIFICATIONS.getDefaultAsBoolean()
+                                )
+                            )
+                                sendNotification(context, goal)
                         }
                     }
                 }
