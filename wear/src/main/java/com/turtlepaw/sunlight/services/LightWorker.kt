@@ -314,7 +314,7 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                         minutes += 1
                         timeInLight = 0
 
-                        if (minutes >= goal) {
+                        if (minutes == goal) {
                             if (
                                 sharedPreferences.getBoolean(
                                     Settings.GOAL_NOTIFICATIONS.getKey(),

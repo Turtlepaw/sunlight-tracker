@@ -15,10 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -28,6 +31,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
@@ -66,12 +70,19 @@ fun WearHome(
         val coroutineScope = rememberCoroutineScope()
         val scalingLazyListState = rememberScalingLazyListState()
         val animatedGoal = remember { Animatable(0f) }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val state by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
 
-        LaunchedEffect(true) {
+        LaunchedEffect(state) {
             coroutineScope.launch {
                 animatedGoal.animateTo(
-                    targetValue = goal.toFloat(),
-                    animationSpec = tween(durationMillis = 1000)
+                    0f,
+                    tween(0)
+                )
+
+                animatedGoal.animateTo(
+                    targetValue = today.toFloat(),
+                    animationSpec = tween(durationMillis = 1500)
                 )
             }
         }
@@ -114,7 +125,7 @@ fun WearHome(
                         CircularProgressIndicator(
                             trackColor = MaterialTheme.colors.surface,
                             progress = animateFloatAsState(
-                                targetValue = animatedGoal.value / goal,
+                                targetValue = animatedGoal.value / goal.toFloat(),
                                 label = "GoalProgress"
                             ).value, // Adjust this value to change the progress
                             modifier = Modifier
