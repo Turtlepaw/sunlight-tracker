@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import com.turtlepaw.sunlight.presentation.pages.ClockworkToolkit
 import com.turtlepaw.sunlight.presentation.pages.StatePicker
 import com.turtlepaw.sunlight.presentation.pages.WearHome
 import com.turtlepaw.sunlight.presentation.pages.history.WearHistory
+import com.turtlepaw.sunlight.presentation.pages.settings.WearNotices
 import com.turtlepaw.sunlight.presentation.pages.settings.WearSettings
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.SensorReceiver
@@ -63,7 +65,8 @@ enum class Routes(private val route: String) {
     GOAL_PICKER("/goal-picker"),
     SUN_PICKER("/sun-picker"),
     HISTORY("/history"),
-    CLOCKWORK("/clockwork-toolkit");
+    CLOCKWORK("/clockwork-toolkit"),
+    NOTICES("/notices");
 
     fun getRoute(query: String? = null): String {
         return if(query != null){
@@ -80,7 +83,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private lateinit var sunlightViewModel: MutableState<SunlightViewModel>
     private var sensorManager: SensorManager? = null
     private var lightSensor: Sensor? = null
-    private var sunlightLx = mutableStateOf(0f)
+    private var sunlightLx = mutableFloatStateOf(0f)
     private val tag = "MainSunlightActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,7 +128,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 sharedPreferences,
                 sunlightViewModel.value,
                 this,
-                sunlightLx.value
+                sunlightLx.floatValue
             )
         }
     }
@@ -162,7 +165,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if (event.sensor.type == Sensor.TYPE_LIGHT) {
             val luminance = event.values[0]
             // Check if light intensity surpasses threshold
-            sunlightLx.value = luminance
+            sunlightLx.floatValue = luminance
         }
     }
 }
@@ -186,11 +189,16 @@ fun WearPages(
         var sunlightHistory by remember { mutableStateOf<Set<Pair<LocalDate, Int>?>>(emptySet()) }
         var sunlightToday by remember { mutableIntStateOf(0) }
         // Battery Saver
+        val goalNotificatinsRaw = sharedPreferences.getBoolean(
+            Settings.GOAL_NOTIFICATIONS.getKey(),
+            Settings.GOAL_NOTIFICATIONS.getDefaultAsBoolean()
+        )
         val isBatterySaverRaw = sharedPreferences.getBoolean(
             Settings.BATTERY_SAVER.getKey(),
             Settings.BATTERY_SAVER.getDefaultAsBoolean()
         )
         var isBatterySaver by remember { mutableStateOf(isBatterySaverRaw) }
+        var goalNotifications by remember { mutableStateOf(goalNotificatinsRaw) }
         var loading by remember { mutableStateOf(true) }
         val lifecycleOwner = LocalLifecycleOwner.current
         val state by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
@@ -241,12 +249,20 @@ fun WearPages(
             }
             composable(Routes.SETTINGS.getRoute()) {
                 WearSettings(
+                    context,
                     navigate = { route ->
                         navController.navigate(route)
                     },
                     goal,
                     threshold,
-                    isBatterySaver
+                    isBatterySaver,
+                    goalNotifications,
+                    setGoalNotifications = {
+                        goalNotifications = it
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean(Settings.GOAL_NOTIFICATIONS.getKey(), it)
+                        editor.apply()
+                    }
                 ){ value ->
                     isBatterySaver = value
                     val editor = sharedPreferences.edit()
@@ -266,6 +282,11 @@ fun WearPages(
                     val editor = sharedPreferences.edit()
                     editor.putInt(Settings.GOAL.getKey(), value)
                     editor.apply()
+                    // Send the broadcast
+                    val intent = Intent("${context.packageName}.GOAL_UPDATED").apply {
+                        putExtra("goal", value)
+                    }
+                    context.sendBroadcast(intent)
                     navController.popBackStack()
                 }
             }
@@ -299,30 +320,9 @@ fun WearPages(
             composable(Routes.CLOCKWORK.getRoute()){
                 ClockworkToolkit(light = sunlightLx, context = context)
             }
+            composable(Routes.NOTICES.getRoute()){
+                WearNotices()
+            }
         }
     }
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearHome(
-        navigate = {},
-        goal = Settings.GOAL.getDefaultAsInt(),
-        today = 30,
-        5000f,
-        LightConfiguration.LightThreshold.plus(5f).toInt()
-    )
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun SettingsPreview() {
-    WearSettings(
-        navigate = {},
-        goal = Settings.GOAL.getDefaultAsInt(),
-        sunlightThreshold = Settings.SUN_THRESHOLD.getDefaultAsInt(),
-        true,
-        {}
-    )
 }

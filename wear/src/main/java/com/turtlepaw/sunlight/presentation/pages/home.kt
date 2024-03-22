@@ -1,5 +1,8 @@
 package com.turtlepaw.sunlight.presentation.pages
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -11,8 +14,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -22,6 +31,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
@@ -42,6 +52,7 @@ import com.turtlepaw.sunlight.presentation.Routes
 import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.utils.Settings
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 
@@ -56,7 +67,25 @@ fun WearHome(
 ) {
     SleepTheme {
         val focusRequester = rememberActiveFocusRequester()
+        val coroutineScope = rememberCoroutineScope()
         val scalingLazyListState = rememberScalingLazyListState()
+        val animatedGoal = remember { Animatable(0f) }
+        val lifecycleOwner = LocalLifecycleOwner.current
+        val state by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
+
+        LaunchedEffect(state) {
+            coroutineScope.launch {
+                animatedGoal.animateTo(
+                    0f,
+                    tween(0)
+                )
+
+                animatedGoal.animateTo(
+                    targetValue = today.toFloat(),
+                    animationSpec = tween(durationMillis = 1500)
+                )
+            }
+        }
 
         Box(
             modifier = Modifier
@@ -95,7 +124,10 @@ fun WearHome(
                     ) {
                         CircularProgressIndicator(
                             trackColor = MaterialTheme.colors.surface,
-                            progress = today.toFloat() / goal.toFloat(), // Adjust this value to change the progress
+                            progress = animateFloatAsState(
+                                targetValue = animatedGoal.value / goal.toFloat(),
+                                label = "GoalProgress"
+                            ).value, // Adjust this value to change the progress
                             modifier = Modifier
                                 .size(size)
                         )
@@ -161,7 +193,10 @@ fun WearHome(
                 item {
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(
+                                top = 5.dp
+                            ),
                         horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally)
                     ) {
 //                        Button(

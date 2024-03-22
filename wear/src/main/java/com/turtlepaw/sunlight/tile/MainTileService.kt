@@ -130,12 +130,13 @@ class MainTileService : SuspendingTileService(), ViewModelStoreOwner {
                                 .build()
                         )
                         .addContent(
-                            tileLayout(
+                            if(today == 0) noDataLayout(
+                                this
+                            ).build() else tileLayout(
                                 this,
                                 today,
                                 goal
-                            )
-                                .build()
+                            ).build()
                         )
                         .build()
                 ).build()
@@ -164,6 +165,59 @@ class MainTileService : SuspendingTileService(), ViewModelStoreOwner {
     }
 }
 
+private fun noDataLayout(
+    context: Context
+): EdgeContentLayout.Builder {
+    val deviceParameters = buildDeviceParameters(context.resources)
+    return EdgeContentLayout.Builder(deviceParameters)
+        .setPrimaryLabelTextContent(
+            Text.Builder(context, "Sunlight")
+                .setTypography(6.toInt())
+                .setColor(argb(TileColors.LightText))
+                .build()
+        )
+        .setSecondaryLabelTextContent(
+                    Text.Builder(
+                        context,
+                        "No data. Wear your watch in the sun."
+                    ).setTypography(Typography.TYPOGRAPHY_BODY2)
+                        .setColor(argb(TileColors.White))
+                        .setOverflow(LayoutElementBuilders.TEXT_OVERFLOW_ELLIPSIZE_END)
+                        .setMaxLines(2)
+                        .setMultilineAlignment(LayoutElementBuilders.TEXT_ALIGN_CENTER)
+                        .setModifiers(
+                            Modifiers.Builder()
+                                .setPadding(
+                                    Padding.Builder()
+                                        .setTop(
+                                            dp(10f)
+                                        )
+                                        .build()
+                                )
+                                .build()
+                )
+//                .addContent(
+//                    Text.Builder(context, sleepQuality.getTitle())
+//                        .setTypography(Typography.TYPOGRAPHY_BODY2)
+//                        .setColor(argb(TileColors.White))
+//                        .build()
+//                )
+                .build()
+        )
+//        .setContent(
+//            Spannable.Builder()
+//                .addSpan(
+//                    SpanText.Builder()
+//                        .setText("No Data")
+//                        .setFontStyle(
+//                            FontStyle.PrimaryFontSize.getBuilder()
+//                        )
+//                        .build()
+//                )
+//                .build()
+//        )
+}
+
 private fun tileLayout(
     context: Context,
     today: Int,
@@ -175,8 +229,8 @@ private fun tileLayout(
         .setEdgeContent(
             CircularProgressIndicator.Builder()
                 .setProgress(today.toFloat() / goal.toFloat())
-                .setStartAngle(-170f)
-                .setEndAngle(170f)
+                .setStartAngle(-150f)
+                .setEndAngle(150f)
                 .setCircularProgressIndicatorColors(
                     ProgressIndicatorColors(
                         TileColors.PrimaryColor,
@@ -279,5 +333,22 @@ fun TilePreview() {
         LocalContext.current,
         15,
         Settings.GOAL.getDefaultAsInt()
+    ).build())
+}
+
+@Preview(
+    device = WearDevices.SMALL_ROUND,
+    showSystemUi = true,
+    backgroundColor = 0xff000000,
+    showBackground = true
+)
+@Composable
+fun NoDataPreview() {
+    val timeManager = TimeManager()
+    val timeDifference = timeManager.calculateTimeDifference(LocalTime.of(5, 0));
+    val sleepQuality = timeManager.calculateSleepQuality(timeDifference)
+
+    LayoutRootPreview(root = noDataLayout(
+        LocalContext.current
     ).build())
 }

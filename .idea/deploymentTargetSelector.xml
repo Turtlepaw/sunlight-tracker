@@ -2,12 +2,15 @@
 <project version="4">
   <component name="deploymentTargetSelector">
     <selectionStates>
+      <SelectionState runConfigName="mobile">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
       <SelectionState runConfigName="wear">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-02-27T02:09:08.357651900Z">
+        <DropdownSelection timestamp="2024-03-20T02:14:42.276951Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="Default" identifier="serial=10.0.0.194:41043;connection=52cc396a" />
+              <DeviceId pluginId="Default" identifier="serial=10.0.0.44:39379;connection=b6649787" />
             </handle>
           </Target>
         </DropdownSelection>
