@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -27,9 +28,9 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import com.turtlepaw.sunlight.presentation.GoalCompleteActivity
+import androidx.wear.watchface.complications.datasource.ComplicationDataSourceUpdateRequester
+import com.turtlepaw.sunlight.complication.MainComplicationService
 import com.turtlepaw.sunlight.presentation.dataStore
-import com.turtlepaw.sunlight.presentation.goalVibrate
 import com.turtlepaw.sunlight.utils.Settings
 import com.turtlepaw.sunlight.utils.SettingsBasics
 import com.turtlepaw.sunlight.utils.SunlightViewModel
@@ -311,8 +312,18 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                 if (timeInLight >= 60000) {
                     CoroutineScope(Dispatchers.Default).launch {
                         sunlightViewModel.add(LocalDate.now(), (timeInLight / 1000 / 60).toInt())
-                        minutes += 1
+                        minutes += (timeInLight / 1000 / 60).toInt()
                         timeInLight = 0
+
+                        ComplicationDataSourceUpdateRequester
+                            .create(
+                                context = context,
+                                complicationDataSourceComponent = ComponentName(
+                                    context,
+                                    MainComplicationService::class.java
+                                )
+                            )
+                            .requestUpdateAll()
 
                         if (minutes == goal) {
                             if (

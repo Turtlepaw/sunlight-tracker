@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.util.Log
+import androidx.core.math.MathUtils
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -117,8 +118,8 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
 
             ComplicationType.RANGED_VALUE -> RangedValueComplicationData.Builder(
                 min = 0f,
-                max = if(sunlightToday >= goal) sunlightToday.toFloat() else goal.toFloat(),
-                value = sunlightToday.toFloat(),
+                max = goal.toFloat(),
+                value = MathUtils.clamp(sunlightToday, 0, goal).toFloat(),
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
             )
                 .setText(

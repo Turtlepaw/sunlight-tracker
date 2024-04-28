@@ -10,6 +10,8 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -28,7 +30,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.app.ActivityCompat
-import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
@@ -48,7 +49,6 @@ import androidx.wear.tooling.preview.devices.WearDevices
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.rotaryinput.rotaryWithScroll
 import com.turtlepaw.sunlight.R
-import com.turtlepaw.sunlight.presentation.MainActivity
 import com.turtlepaw.sunlight.presentation.Routes
 import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
@@ -95,7 +95,10 @@ fun WearSettings(
                 )
             ) {
                 item {
-                    Text(text = "Settings")
+                    Text(
+                        text = "Settings",
+                        modifier = Modifier.padding(bottom = 10.dp, top = 20.dp)
+                    )
                 }
                 item {
                     Button(
@@ -103,16 +106,27 @@ fun WearSettings(
                             navigate(Routes.GOAL_PICKER.getRoute())
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = MaterialTheme.colors.primary
                         )
                     ) {
-                        Text(
-                            text = "${goal}m goal",
-                            color = Color.Black
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.flag),
+                                contentDescription = "Flag",
+                                tint = MaterialTheme.colors.onPrimary,
+                                modifier = Modifier
+                                    .padding(2.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(2.dp))
+                            Text(
+                                text = "Goal",
+                                color = MaterialTheme.colors.onPrimary
+                            )
+                        }
                     }
                 }
                 item {
@@ -121,16 +135,27 @@ fun WearSettings(
                             navigate(Routes.SUN_PICKER.getRoute())
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = MaterialTheme.colors.primary
                         )
                     ) {
-                        Text(
-                            text = "$sunlightThreshold threshold",
-                            color = Color.Black
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.sunlight),
+                                contentDescription = "Sunlight",
+                                tint = MaterialTheme.colors.onPrimary,
+                                modifier = Modifier
+                                    .padding(2.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(2.dp))
+                            Text(
+                                text = "Threshold",
+                                color = MaterialTheme.colors.onPrimary
+                            )
+                        }
                     }
                 }
                 item {
@@ -139,16 +164,27 @@ fun WearSettings(
                             navigate(Routes.CLOCKWORK.getRoute())
                         },
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             backgroundColor = MaterialTheme.colors.primary
                         )
                     ) {
-                        Text(
-                            text = "Toolkit",
-                            color = Color.Black
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.build),
+                                contentDescription = "Build",
+                                tint = MaterialTheme.colors.onPrimary,
+                                modifier = Modifier
+                                    .padding(2.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(2.dp))
+                            Text(
+                                text = "Toolkit",
+                                color = MaterialTheme.colors.onPrimary
+                            )
+                        }
                     }
                 }
 //                item {
@@ -172,8 +208,7 @@ fun WearSettings(
                 item {
                     ToggleChip(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
+                            .fillMaxWidth(),
                         checked = goalNotifications,
                         onCheckedChange = { isEnabled ->
                             if(Build.VERSION.SDK_INT == Build.VERSION_CODES.TIRAMISU) {
@@ -204,7 +239,7 @@ fun WearSettings(
                             }
                         },
                         label = {
-                            Text("Notify", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text("Goal alerts", overflow = TextOverflow.Visible)
                         },
                         appIcon = {
                             Icon(

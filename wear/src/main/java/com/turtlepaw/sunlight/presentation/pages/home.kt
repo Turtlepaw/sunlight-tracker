@@ -31,7 +31,6 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.Lifecycle
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
@@ -107,7 +106,10 @@ fun WearHome(
                         scrollableState = scalingLazyListState,
                     ),
                 scrollableState = scalingLazyListState,
-                verticalAlignment = Arrangement.Top,
+                verticalAlignment = Arrangement.spacedBy(
+                    space = 0.dp,
+                    alignment = Alignment.Top
+                ),
             ) {
                 item {
                     val size = 95.dp

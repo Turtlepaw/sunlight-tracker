@@ -7,21 +7,23 @@ import android.content.Intent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.foundation.ExperimentalWearFoundationApi
 import androidx.wear.compose.foundation.lazy.rememberScalingLazyListState
 import androidx.wear.compose.foundation.rememberActiveFocusRequester
-import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.Card
+import androidx.wear.compose.material.CardDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Text
@@ -31,7 +33,6 @@ import androidx.wear.tooling.preview.devices.WearDevices
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.compose.rotaryinput.rotaryWithScroll
 import com.turtlepaw.sunlight.presentation.GoalCompleteActivity
-import com.turtlepaw.sunlight.presentation.Routes
 import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.LightLoggerService
@@ -44,7 +45,7 @@ import com.turtlepaw.sunlight.services.SensorReceiver
 fun ClockworkToolkit(
     light: Float,
     context: Context
-){
+) {
     SleepTheme {
         val focusRequester = rememberActiveFocusRequester()
         val scalingLazyListState = rememberScalingLazyListState()
@@ -90,60 +91,73 @@ fun ClockworkToolkit(
                 item {
                     Text(
                         text = "Toolkit",
-                        style = MaterialTheme.typography.caption1
-                    )
-                }
-                item {
-                    Text(
-                        text = "Useful debugging tools",
-                        style = MaterialTheme.typography.body2
-                    )
-                }
-                item {
-                    Text(
-                        text = "Current Light",
-                        style = MaterialTheme.typography.title3
-                    )
-                }
-                item {
-                    Text(text = "$light lx")
-                }
-                item {
-                    Text(
-                        text = "Light worker",
                         style = MaterialTheme.typography.title3
                     )
                 }
                 item {
                     Text(
-                        text = if(lightWorker) "Running"
-                        else if(sensorWorker != null) "Idle"
-                        else if(isSampling) "Sampling"
-                        else "Not running",
-                        color = if(lightWorker) Color.Green
-                        else if(sensorWorker != null) Color.Yellow
-                        else if(isSampling) Color.Blue
-                        else Color.Red
+                        text = "Debug tools for developers",
+                        style = MaterialTheme.typography.body2,
+                        textAlign = TextAlign.Center
                     )
+                }
+                item {
+                    Spacer(modifier = Modifier.padding(2.dp))
+                }
+                item {
+                    Card(
+                        onClick = { /*TODO*/ },
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        ),
+                    ) {
+                        Text(
+                            text = "Current Light",
+                            style = MaterialTheme.typography.title3
+                        )
+                        Text(text = "$light lx", fontWeight = FontWeight.Medium)
+                    }
                 }
 
                 item {
-                    Button(
+                    Card(
+                        onClick = { /*TODO*/ },
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        )
+                    ) {
+                        Text(
+                            text = "Light Worker",
+                            style = MaterialTheme.typography.title3
+                        )
+                        Text(
+                            text = if (lightWorker) "Running"
+                            else if (sensorWorker != null) "Idle"
+                            else if (isSampling) "Sampling"
+                            else "Not running",
+                            color = if (lightWorker) Color.Green
+                            else if (sensorWorker != null) Color.Yellow
+                            else if (isSampling) Color.Blue
+                            else Color.Red,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                item {
+                    Card(
                         onClick = {
                             val intent = Intent(context, GoalCompleteActivity::class.java)
                             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = MaterialTheme.colors.primary
-                        )
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        ),
                     ) {
                         Text(
-                            text = "Goal Complete",
-                            color = Color.Black
+                            text = "Simulate Goal Complete",
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 }
