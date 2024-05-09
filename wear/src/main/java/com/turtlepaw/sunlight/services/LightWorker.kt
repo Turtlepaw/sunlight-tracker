@@ -332,7 +332,6 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                             putExtra("value", minutes)
                         }
                         context.sendBroadcast(intent)
-                        Log.d("Worker", "Sending broadcast of $minutes")
 
                         if (minutes == goal) {
                             if (
