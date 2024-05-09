@@ -312,6 +312,9 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                 if (timeInLight >= 60000) {
                     CoroutineScope(Dispatchers.Default).launch {
                         sunlightViewModel.add(LocalDate.now(), (timeInLight / 1000 / 60).toInt())
+                        if (minutes == 0) {
+                            minutes = sunlightViewModel.getDay(LocalDate.now())?.second ?: 0
+                        }
                         minutes += (timeInLight / 1000 / 60).toInt()
                         timeInLight = 0
 
@@ -324,6 +327,12 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
                                 )
                             )
                             .requestUpdateAll()
+
+                        val intent = Intent("${context.packageName}.SUNLIGHT_CHANGED").apply {
+                            putExtra("value", minutes)
+                        }
+                        context.sendBroadcast(intent)
+                        Log.d("Worker", "Sending broadcast of $minutes")
 
                         if (minutes == goal) {
                             if (
