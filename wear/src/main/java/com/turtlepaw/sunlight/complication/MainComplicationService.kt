@@ -94,8 +94,15 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
             return GoalProgressComplicationData.Builder(
                 value = sunlightToday.toFloat(),
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
-                targetValue = goal.toFloat()
-            ).build()
+                targetValue = goal.toFloat(),
+            )
+                .setText(
+                    PlainComplicationText.Builder(text).build()
+                )
+                .setMonochromaticImage(monochromaticImage)
+                .setTapAction(createActivityIntent(context))
+                .setSmallImage(smallImage)
+                .build()
         }
 
         return when (type) {
@@ -132,11 +139,14 @@ class MainComplicationService : SuspendingComplicationDataSourceService(), ViewM
             ComplicationType.MONOCHROMATIC_IMAGE -> MonochromaticImageComplicationData.Builder(
                 monochromaticImage,
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
-            ).build()
+            )
+                .setTapAction(createActivityIntent(context))
+                .build()
             ComplicationType.SMALL_IMAGE -> SmallImageComplicationData.Builder(
                 smallImage,
                 contentDescription = PlainComplicationText.Builder(contentDescription).build(),
             )
+                .setTapAction(createActivityIntent(context))
                 .build()
             // Return default data
             else -> createComplicationData(

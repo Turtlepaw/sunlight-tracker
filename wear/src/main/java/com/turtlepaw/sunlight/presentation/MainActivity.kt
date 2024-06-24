@@ -29,8 +29,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -41,7 +39,6 @@ import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import androidx.wear.tooling.preview.devices.WearDevices
 import com.turtlepaw.sunlight.presentation.pages.ClockworkToolkit
 import com.turtlepaw.sunlight.presentation.pages.StatePicker
 import com.turtlepaw.sunlight.presentation.pages.WearHome
@@ -50,7 +47,7 @@ import com.turtlepaw.sunlight.presentation.pages.settings.WearNotices
 import com.turtlepaw.sunlight.presentation.pages.settings.WearSettings
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.SensorReceiver
-import com.turtlepaw.sunlight.utils.LightConfiguration
+import com.turtlepaw.sunlight.services.scheduleResetWorker
 import com.turtlepaw.sunlight.utils.Settings
 import com.turtlepaw.sunlight.utils.SettingsBasics
 import com.turtlepaw.sunlight.utils.SunlightViewModel
@@ -110,6 +107,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         // Initialize Sensor Manager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager?
         lightSensor = sensorManager!!.getDefaultSensor(Sensor.TYPE_LIGHT)
+
+        scheduleResetWorker()
 
         // Register Sensor Listener
         sensorManager!!.registerListener(
@@ -200,7 +199,7 @@ fun WearPages(
         var isBatterySaver by remember { mutableStateOf(isBatterySaverRaw) }
         var goalNotifications by remember { mutableStateOf(goalNotificatinsRaw) }
         var loading by remember { mutableStateOf(true) }
-        val lifecycleOwner = LocalLifecycleOwner.current
+        val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
         val state by lifecycleOwner.lifecycle.currentStateFlow.collectAsState()
         // Suspended functions
         LaunchedEffect(state) {
@@ -276,7 +275,7 @@ fun WearPages(
                         it.plus(1)
                     },
                     unitOfMeasurement = "m",
-                    goal,
+                    goal
                 ) { value ->
                     goal = value
                     val editor = sharedPreferences.edit()
@@ -297,6 +296,7 @@ fun WearPages(
                     },
                     unitOfMeasurement = "lx",
                     threshold,
+                    recommendedItem = 4
                 ) { value ->
                     threshold = value
                     val editor = sharedPreferences.edit()
@@ -318,7 +318,11 @@ fun WearPages(
                 )
             }
             composable(Routes.CLOCKWORK.getRoute()){
-                ClockworkToolkit(light = sunlightLx, context = context)
+                ClockworkToolkit(
+                    light = sunlightLx,
+                    context = context,
+                    sunlightHistory
+                )
             }
             composable(Routes.NOTICES.getRoute()){
                 WearNotices()

@@ -9,7 +9,8 @@ enum class Settings(private val key: String, private val default: Any?) {
     TIMEOUT("timeout", LocalTime.of(20, 0)),
     WAKEUP("wakeup", LocalTime.of(5, 0)),
     BATTERY_SAVER("battery_saver", true),
-    GOAL_NOTIFICATIONS("goal_notify", false);
+    GOAL_NOTIFICATIONS("goal_notify", false),
+    STATUS("status", false);
 
     fun getKey(): String {
         return key

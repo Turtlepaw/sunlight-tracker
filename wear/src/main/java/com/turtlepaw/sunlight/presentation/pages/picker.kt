@@ -34,6 +34,7 @@ fun StatePicker(
     options: List<Int>,
     unitOfMeasurement: String,
     currentState: Int,
+    recommendedItem: Int? = null,
     onSelect: (Int) -> Unit
 ) {
     val initialIndex = options.indexOf(currentState)
@@ -43,7 +44,9 @@ fun StatePicker(
     )
 
     Column(
-        modifier = Modifier.padding(horizontal = 12.dp).fillMaxWidth(),
+        modifier = Modifier
+            .padding(horizontal = 12.dp)
+            .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 //        ListHeader {
@@ -60,21 +63,44 @@ fun StatePicker(
                 .weight(1f)
                 .rotaryWithSnap(state.toRotaryScrollAdapter())
         ) {
-            Text(
-                text = "${options[it]}$unitOfMeasurement",
-                style = with(LocalDensity.current) {
-                    MaterialTheme.typography.display1.copy(
-                        fontWeight = FontWeight.Medium,
-                        // Ignore text scaling
-                        fontSize = MaterialTheme.typography.display1.fontSize.value.dp.toSp()
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "${options[it]}$unitOfMeasurement",
+                    style = with(LocalDensity.current) {
+                        MaterialTheme.typography.display1.copy(
+                            fontWeight = FontWeight.Medium,
+                            // Ignore text scaling
+                            fontSize = MaterialTheme.typography.display1.fontSize.value.dp.toSp()
+                        )
+                    },
+                    color = MaterialTheme.colors.primary,
+                    // In case of overflow, minimize weird layout behavior
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 2
+                )
+
+                if (it == recommendedItem) {
+                    Text(
+                        text = "(recommended)",
+                        style = with(LocalDensity.current) {
+                            MaterialTheme.typography.caption1.copy(
+                                fontWeight = FontWeight.Medium,
+                                // Ignore text scaling
+                                fontSize = MaterialTheme.typography.caption1.fontSize.value.dp.toSp()
+                            )
+                        },
+                        color = MaterialTheme.colors.onSurfaceVariant,
+                        // In case of overflow, minimize weird layout behavior
+                        textAlign = TextAlign.Center,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
                     )
-                },
-                color = MaterialTheme.colors.primary,
-                // In case of overflow, minimize weird layout behavior
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2
-            )
+                }
+            }
         }
         Button(
             onClick = {
@@ -116,7 +142,8 @@ private fun PreviewRefreshIntervalPickerView() {
             unitOfMeasurement = "m",
             options = List(60){
                 it.plus(1)
-            }
+            },
+            recommendedItem = null
         ) {}
     }
 }

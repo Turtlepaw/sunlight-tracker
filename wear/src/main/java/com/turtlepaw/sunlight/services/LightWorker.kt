@@ -24,6 +24,7 @@ import androidx.annotation.Keep
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.edit
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -113,6 +114,9 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
 
     fun onShutdown() {
         Log.d(TAG, "Shutting down...")
+        sharedPreferences.edit {
+            putBoolean(Settings.STATUS.getKey(), false)
+        }
         unregisterReceiver(shutdownReceiver)
         handler.removeCallbacks(runnable)
         sensorManager!!.unregisterListener(this)
@@ -120,6 +124,9 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
 
     fun onWakeup() {
         Log.d(TAG, "Waking up...")
+        sharedPreferences.edit {
+            putBoolean(Settings.STATUS.getKey(), true)
+        }
         val shutDownFilter = IntentFilter("${packageName}.SHUTDOWN_WORKER")
         registerReceiver(shutdownReceiver, shutDownFilter)
         sensorManager!!.registerListener(
@@ -238,6 +245,9 @@ class LightWorker : Service(), SensorEventListener, ViewModelStoreOwner {
             SettingsBasics.SHARED_PREFERENCES.getKey(),
             SettingsBasics.SHARED_PREFERENCES.getMode()
         )
+        sharedPreferences.edit {
+            putBoolean(Settings.STATUS.getKey(), true)
+        }
         threshold = sharedPreferences.getInt(
             Settings.SUN_THRESHOLD.getKey(),
             Settings.SUN_THRESHOLD.getDefaultAsInt()

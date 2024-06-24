@@ -38,13 +38,17 @@ import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.LightLoggerService
 import com.turtlepaw.sunlight.services.LightWorker
 import com.turtlepaw.sunlight.services.SensorReceiver
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 
 @OptIn(ExperimentalWearFoundationApi::class, ExperimentalHorologistApi::class)
 @Composable
 fun ClockworkToolkit(
     light: Float,
-    context: Context
+    context: Context,
+    history: Set<Pair<LocalDate, Int>?>
 ) {
     SleepTheme {
         val focusRequester = rememberActiveFocusRequester()
@@ -104,6 +108,83 @@ fun ClockworkToolkit(
                 item {
                     Spacer(modifier = Modifier.padding(2.dp))
                 }
+
+                // Get the current date
+                val today = LocalDate.now()
+
+                item {
+                    Card(
+                        onClick = { /*TODO*/ },
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        ),
+                    ) {
+// Calculate the start of the current week (assuming week starts on Monday)
+                        val startOfWeek: LocalDate = today.with(DayOfWeek.MONDAY)
+
+// Calculate the end of the current week (assuming week ends on Sunday)
+                        val endOfWeek: LocalDate = today.with(DayOfWeek.SUNDAY)
+
+// Filter the history list to include only the items from this week and sum the second elements
+                        val sumThisWeek = history.filterNotNull()
+                            .filter { it.first in startOfWeek..endOfWeek }
+                            .sumOf { it.second }
+
+                        Text(
+                            text = "Weekly",
+                            style = MaterialTheme.typography.title3
+                        )
+                        Text(text = "${sumThisWeek} min", fontWeight = FontWeight.Medium)
+                    }
+                }
+
+                item {
+                    Card(
+                        onClick = { /*TODO*/ },
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        ),
+                    ) {
+                        // Calculate the start of the current month
+                        val startOfMonth: LocalDate =
+                            today.with(TemporalAdjusters.firstDayOfMonth())
+
+// Calculate the end of the current month
+                        val endOfMonth: LocalDate = today.with(TemporalAdjusters.lastDayOfMonth())
+
+// Filter the history list to include only the items from this month and sum the second elements
+                        val sumThisMonth = history
+                            .filterNotNull()
+                            .filter { it.first in startOfMonth..endOfMonth }
+                            .sumOf { it.second }
+
+                        Text(
+                            text = "Monthly",
+                            style = MaterialTheme.typography.title3
+                        )
+                        Text(text = "${sumThisMonth} min", fontWeight = FontWeight.Medium)
+                    }
+                }
+
+                item {
+                    Card(
+                        onClick = { /*TODO*/ },
+                        backgroundPainter = CardDefaults.cardBackgroundPainter(
+                            startBackgroundColor = MaterialTheme.colors.surface
+                        ),
+                    ) {
+                        val sumThisYear = history.filterNotNull()
+                            .filter { it.first.year == today.year }
+                            .sumOf { it.second }
+
+                        Text(
+                            text = "Yearly",
+                            style = MaterialTheme.typography.title3
+                        )
+                        Text(text = "${sumThisYear} min", fontWeight = FontWeight.Medium)
+                    }
+                }
+
                 item {
                     Card(
                         onClick = { /*TODO*/ },
@@ -161,13 +242,20 @@ fun ClockworkToolkit(
                         )
                     }
                 }
+                item {
+                    Text(
+                        text = "Running Tropical Bunny",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(top = 5.dp)
+                    )
+                }
             }
         }
     }
 }
 
 @SuppressWarnings("deprecation")
-private fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
+fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean {
     val manager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager?
     for (service in manager!!.getRunningServices(Int.MAX_VALUE)) {
         if (serviceClass.name == service.service.className) {
@@ -182,6 +270,7 @@ private fun isServiceRunning(serviceClass: Class<*>, context: Context): Boolean 
 fun ToolkitPreview() {
     ClockworkToolkit(
         light = 2000f,
-        context = LocalContext.current
+        context = LocalContext.current,
+        history = emptySet()
     )
 }
