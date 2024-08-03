@@ -14,6 +14,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,8 +29,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -60,7 +61,7 @@ import com.turtlepaw.sunlight.presentation.components.ItemsListWithModifier
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.utils.Settings
 import com.valentinilk.shimmer.ShimmerBounds
-import com.valentinilk.shimmer.ShimmerTheme
+import com.valentinilk.shimmer.defaultShimmerTheme
 import com.valentinilk.shimmer.rememberShimmer
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
@@ -165,9 +166,12 @@ fun WearHome(
                             ),
                             contentDescription = if (today == 0)
                                 "cloud" else "sunlight",
-                            tint = if (today == 0)
-                                Color.Gray
-                            else MaterialTheme.colors.primary,
+                            tint = when {
+                                today == 0 -> MaterialTheme.colors.primary.copy(0.6f)
+                                    .compositeOver(Color.Gray)
+
+                                else -> MaterialTheme.colors.primary
+                            },
                             modifier = Modifier
                                 .size(iconSize)
                                 .align(Alignment.Center)
@@ -194,63 +198,64 @@ fun WearHome(
                     )
                 }
                 item {
-                    Text(
-                        text = if (today == 0)
-                            buildAnnotatedString {
-                                withStyle(style = SpanStyle(fontSize = 34.sp)) {
-                                    append("No data")
-                                }
-                            }
-                        else buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontSize = 34.sp)) {
-                                append("$today")
-                            }
-                            withStyle(style = SpanStyle(fontSize = 30.sp)) {
-                                append(" min")
-                            }
-                        },
-                        color = when {
-                            sunlightLx >= threshold -> MaterialTheme.colors.primary
-                            today == 0 -> Color.Gray
-                            else -> MaterialTheme.colors.primary
-                        },
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.W500,
-                        modifier = Modifier
-                            .padding(3.dp)
-                            .then(
-                                if (sunlightLx >= threshold)
-                                    Modifier.shimmer(
-                                        rememberShimmer(
-                                            shimmerBounds = ShimmerBounds.View,
-                                            theme = ShimmerTheme(
-                                                animationSpec = infiniteRepeatable(
-                                                    animation = tween(
-                                                        800,
-                                                        easing = LinearEasing,
-                                                        delayMillis = 800,
-                                                    ),
-                                                    repeatMode = RepeatMode.Restart,
+                    val secondaryColor =
+                        if (today == 0) Color.Gray.copy(alpha = 0.8f) else Color.Unspecified.copy(
+                            alpha = 0.8f
+                        )
+
+                    Box(
+                        modifier = Modifier.then(
+                            if (sunlightLx >= threshold)
+                                Modifier.shimmer(
+                                    rememberShimmer(
+                                        shimmerBounds = ShimmerBounds.View,
+                                        theme = defaultShimmerTheme.copy(
+                                            animationSpec = infiniteRepeatable(
+                                                animation = tween(
+                                                    durationMillis = 800, // Shorter duration for subtle shimmer
+                                                    delayMillis = 400, // Less delay for a smoother transition
+                                                    easing = LinearEasing,
                                                 ),
-                                                blendMode = BlendMode.SrcIn,
-                                                rotation = 15.0f,
-                                                shaderColors = listOf(
-                                                    MaterialTheme.colors.primary.copy(alpha = 0.35f),
-                                                    MaterialTheme.colors.primary.copy(alpha = 1.00f),
-                                                    MaterialTheme.colors.primary.copy(alpha = 0.35f),
-                                                ),
-                                                shaderColorStops = listOf(
-                                                    0.0f,
-                                                    0.5f,
-                                                    1.0f,
-                                                ),
-                                                shimmerWidth = 400.dp,
-                                            )
+                                            ),
+                                            rotation = 10f, // Subtle rotation to avoid excessive motion
+                                            shaderColors = listOf(
+                                                secondaryColor,
+                                                Color.White,
+                                                secondaryColor,
+                                            ),
+                                            shaderColorStops = null,
+                                            shimmerWidth = 100.dp, // Narrow shimmer width for better readability
                                         )
                                     )
-                                else Modifier
-                            )
-                    )
+                                )
+                            else Modifier
+                        )
+                    ) {
+                        Text(
+                            text = if (today == 0)
+                                buildAnnotatedString {
+                                    withStyle(style = SpanStyle(fontSize = 34.sp)) {
+                                        append("No data")
+                                    }
+                                }
+                            else buildAnnotatedString {
+                                withStyle(style = SpanStyle(fontSize = 34.sp)) {
+                                    append("$today")
+                                }
+                                withStyle(style = SpanStyle(fontSize = 30.sp)) {
+                                    append(" min")
+                                }
+                            },
+                            color = when {
+                                //today == 0 -> Color.Gray
+                                sunlightLx >= threshold -> MaterialTheme.colors.primary
+                                else -> MaterialTheme.colors.primary
+                            },
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.W500,
+                            modifier = Modifier.padding(3.dp)
+                        )
+                    }
                 }
                 item {
                     Text(
@@ -268,16 +273,17 @@ fun WearHome(
                     Spacer(modifier = Modifier.padding(vertical = 5.dp))
                 }
                 item {
-                    Row(
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(
                                 top = 5.dp
                             ),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            20.dp,
-                            Alignment.CenterHorizontally
-                        )
+//                        horizontalAlignment = Arrangement.spacedBy(
+//                            20.dp,
+//                            Alignment.CenterHorizontally
+//                        )
+                        verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
 //                        Button(
 //                            onClick = {
@@ -326,6 +332,38 @@ fun WearHome(
                                 Spacer(modifier = Modifier.padding(5.dp))
                                 Text(
                                     text = "Settings",
+                                    color = MaterialTheme.colors.primary,
+                                    style = MaterialTheme.typography.title3
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                navigate(
+                                    Routes.HISTORY.getRoute()
+                                )
+                            },
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 10.dp)
+                            //.wrapContentSize(align = Alignment.Center)
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(2.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+
+                                ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.history),
+                                    tint = MaterialTheme.colors.primary,
+                                    contentDescription = "History",
+                                )
+                                Spacer(modifier = Modifier.padding(5.dp))
+                                Text(
+                                    text = "History",
                                     color = MaterialTheme.colors.primary,
                                     style = MaterialTheme.typography.title3
                                 )

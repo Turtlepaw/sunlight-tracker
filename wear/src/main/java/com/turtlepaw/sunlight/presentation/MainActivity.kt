@@ -40,9 +40,10 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.turtlepaw.sunlight.presentation.pages.ClockworkToolkit
+import com.turtlepaw.sunlight.presentation.pages.History
 import com.turtlepaw.sunlight.presentation.pages.StatePicker
+import com.turtlepaw.sunlight.presentation.pages.Stats
 import com.turtlepaw.sunlight.presentation.pages.WearHome
-import com.turtlepaw.sunlight.presentation.pages.history.WearHistory
 import com.turtlepaw.sunlight.presentation.pages.settings.WearNotices
 import com.turtlepaw.sunlight.presentation.pages.settings.WearSettings
 import com.turtlepaw.sunlight.presentation.theme.SleepTheme
@@ -63,7 +64,8 @@ enum class Routes(private val route: String) {
     SUN_PICKER("/sun-picker"),
     HISTORY("/history"),
     CLOCKWORK("/clockwork-toolkit"),
-    NOTICES("/notices");
+    NOTICES("/notices"),
+    STATS("/stats");
 
     fun getRoute(query: String? = null): String {
         return if(query != null){
@@ -310,13 +312,13 @@ fun WearPages(
                     navController.popBackStack()
                 }
             }
-            composable(Routes.HISTORY.getRoute()){
-                WearHistory(
-                    goal,
-                    sunlightHistory,
-                    loading
-                )
-            }
+//            composable(Routes.HISTORY.getRoute()){
+//                WearHistory(
+//                    goal,
+//                    sunlightHistory,
+//                    loading
+//                )
+//            }
             composable(Routes.CLOCKWORK.getRoute()){
                 ClockworkToolkit(
                     light = sunlightLx,
@@ -324,8 +326,19 @@ fun WearPages(
                     sunlightHistory
                 )
             }
+            composable(Routes.STATS.getRoute()) {
+                Stats(
+                    sunlightHistory
+                )
+            }
             composable(Routes.NOTICES.getRoute()){
                 WearNotices()
+            }
+            composable(Routes.HISTORY.getRoute()) {
+                Log.d("History", sunlightHistory.toString())
+                History(
+                    sunlightHistory
+                )
             }
         }
     }

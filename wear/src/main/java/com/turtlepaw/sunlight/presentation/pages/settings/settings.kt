@@ -187,6 +187,35 @@ fun WearSettings(
                         }
                     }
                 }
+                item {
+                    Button(
+                        onClick = {
+                            navigate(Routes.STATS.getRoute())
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = MaterialTheme.colors.primary
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.bar_chart),
+                                contentDescription = "Bar Chart",
+                                tint = MaterialTheme.colors.onPrimary,
+                                modifier = Modifier
+                                    .padding(2.dp)
+                            )
+                            Spacer(modifier = Modifier.padding(2.dp))
+                            Text(
+                                text = "Stats",
+                                color = MaterialTheme.colors.onPrimary
+                            )
+                        }
+                    }
+                }
 //                item {
 //                    Button(
 //                        onClick = {

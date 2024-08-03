@@ -38,9 +38,7 @@ import com.turtlepaw.sunlight.presentation.theme.SleepTheme
 import com.turtlepaw.sunlight.services.LightLoggerService
 import com.turtlepaw.sunlight.services.LightWorker
 import com.turtlepaw.sunlight.services.SensorReceiver
-import java.time.DayOfWeek
 import java.time.LocalDate
-import java.time.temporal.TemporalAdjusters
 
 
 @OptIn(ExperimentalWearFoundationApi::class, ExperimentalHorologistApi::class)
@@ -107,82 +105,6 @@ fun ClockworkToolkit(
                 }
                 item {
                     Spacer(modifier = Modifier.padding(2.dp))
-                }
-
-                // Get the current date
-                val today = LocalDate.now()
-
-                item {
-                    Card(
-                        onClick = { /*TODO*/ },
-                        backgroundPainter = CardDefaults.cardBackgroundPainter(
-                            startBackgroundColor = MaterialTheme.colors.surface
-                        ),
-                    ) {
-// Calculate the start of the current week (assuming week starts on Monday)
-                        val startOfWeek: LocalDate = today.with(DayOfWeek.MONDAY)
-
-// Calculate the end of the current week (assuming week ends on Sunday)
-                        val endOfWeek: LocalDate = today.with(DayOfWeek.SUNDAY)
-
-// Filter the history list to include only the items from this week and sum the second elements
-                        val sumThisWeek = history.filterNotNull()
-                            .filter { it.first in startOfWeek..endOfWeek }
-                            .sumOf { it.second }
-
-                        Text(
-                            text = "Weekly",
-                            style = MaterialTheme.typography.title3
-                        )
-                        Text(text = "${sumThisWeek} min", fontWeight = FontWeight.Medium)
-                    }
-                }
-
-                item {
-                    Card(
-                        onClick = { /*TODO*/ },
-                        backgroundPainter = CardDefaults.cardBackgroundPainter(
-                            startBackgroundColor = MaterialTheme.colors.surface
-                        ),
-                    ) {
-                        // Calculate the start of the current month
-                        val startOfMonth: LocalDate =
-                            today.with(TemporalAdjusters.firstDayOfMonth())
-
-// Calculate the end of the current month
-                        val endOfMonth: LocalDate = today.with(TemporalAdjusters.lastDayOfMonth())
-
-// Filter the history list to include only the items from this month and sum the second elements
-                        val sumThisMonth = history
-                            .filterNotNull()
-                            .filter { it.first in startOfMonth..endOfMonth }
-                            .sumOf { it.second }
-
-                        Text(
-                            text = "Monthly",
-                            style = MaterialTheme.typography.title3
-                        )
-                        Text(text = "${sumThisMonth} min", fontWeight = FontWeight.Medium)
-                    }
-                }
-
-                item {
-                    Card(
-                        onClick = { /*TODO*/ },
-                        backgroundPainter = CardDefaults.cardBackgroundPainter(
-                            startBackgroundColor = MaterialTheme.colors.surface
-                        ),
-                    ) {
-                        val sumThisYear = history.filterNotNull()
-                            .filter { it.first.year == today.year }
-                            .sumOf { it.second }
-
-                        Text(
-                            text = "Yearly",
-                            style = MaterialTheme.typography.title3
-                        )
-                        Text(text = "${sumThisYear} min", fontWeight = FontWeight.Medium)
-                    }
                 }
 
                 item {
