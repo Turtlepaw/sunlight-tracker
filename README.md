@@ -1,3 +1,7 @@
+### Archive Notice
+> [!WARNING]
+> This app has merged into [Health](https://github.com/Turtlepaw/health), a collection of useful health apps.
+
 <div align="center">
 <img src="./assets/banner.png" width="700" alt="Banner"/>
 <h3>Sunlight Tracker tracks your daily sunlight</h3>
